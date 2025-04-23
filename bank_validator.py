@@ -11,6 +11,7 @@ import logging
 from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
+from langchain_community.document_loaders.image import UnstructuredImageLoader
 from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
 import streamlit as st
@@ -36,21 +37,21 @@ def extract_text_from_document(uploaded_file):
     print("\n[Agent 1] OCR extracting document...")
 
     try:
-        if uploaded_file.name.endswith(".pdf"):
-            # Convert first page of PDF to image
-            images = convert_from_path(uploaded_file.name)
-            image = images[0]
-        else:
-            image = Image.open(uploaded_file)
+        # Save uploaded_file temporarily
+        with open("temp_image.png", "wb") as f:
+            f.write(uploaded_file.read())
 
-        text = pytesseract.image_to_string(image)
-        logging.info("OCR extraction complete.")
+        # Use LangChain loader
+        loader = UnstructuredImageLoader("temp_image.png")
+        data = loader.load()
+        text = data[0].page_content
+
+        logging.info("Text extracted via UnstructuredImageLoader.")
         return text
-
     except Exception as e:
-        logging.error(f"OCR failed: {e}")
+        logging.error(f"Unstructured loader failed: {e}")
         return ""
-
+        
 def llm_extract_fields(text):
     print("\n[Agent 1] Extracting structured fields via LLM...")
     
@@ -151,7 +152,7 @@ if st.button('Validate'):
     if uploaded_file and all(vendor_input.values()):
         st.info("Processing uploaded document...")
         extracted_text = extract_text_from_document(uploaded_file)
-        st.subheader("🧾 OCR Output")
+        st.subheader("🧾 Image Output")
         st.code(extracted_text, language="text")
 
         # Run LLM extraction
