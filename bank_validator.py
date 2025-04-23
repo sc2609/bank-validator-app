@@ -7,6 +7,7 @@ import json
 import random
 import re
 import numpy as np
+import subprocess
 import cv2
 import logging
 from sklearn.ensemble import IsolationForest
@@ -144,6 +145,8 @@ vendor_input = {
 }
 
 if st.button('Validate'):
+    tesseract_path = subprocess.getoutput("which tesseract")
+    st.write("🔍 Tesseract path:", tesseract_path)
     st.write("Uploaded file name:", uploaded_file.name)
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
     if uploaded_file and all(vendor_input.values()):
