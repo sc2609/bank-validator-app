@@ -13,7 +13,7 @@ from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from langchain_core.output_parsers import PydanticOutputParser
+from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts import ChatPromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
