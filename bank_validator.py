@@ -139,10 +139,11 @@ def validate_user_input(user_input, extracted_data):
     return validation
 
 # ----------- Streamlit UI -----------
-st.title("📄 Banking Document Validator with AI")
+st.title("📄 Banking Document Validator")
+st.caption("AI-powered tool to extract and validate banking details using OCR, LLM, and LangChain.")
 
 with st.sidebar:
-    st.header("🔍 Upload Document")
+    st.header("📤 Upload Bank Document")
     uploaded_file = st.file_uploader("Upload Image or PDF", type=["png", "jpg", "jpeg"])
 
 st.header("🏦 Enter Vendor Banking Details")
@@ -191,7 +192,7 @@ if st.button('✅ Validate Banking Details'):
         This AI-powered tool leverages OCR, LLMs, and the LangChain framework to automate the validation of banking details — delivering unmatched speed, accuracy, and scalability.
         
         🧠 Designed for operational teams.  
-        🔒 Future-ready: Fraud detection module launching soon...
+        🔒 Future-ready: Fraud detection powered by AI module launching soon...
         """)
 
         logging.info("Validation complete")
