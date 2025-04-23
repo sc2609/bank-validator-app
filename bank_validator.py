@@ -8,7 +8,6 @@ import random
 import re
 import numpy as np
 import subprocess
-import cv2
 import logging
 from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
@@ -37,15 +36,10 @@ class BankDetails(BaseModel):
 # ----------- Agent 1: Document Extractor (OCR + Layout) -----------
 def extract_text_from_document(uploaded_file):
     try:
-        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"  # or your actual path
-
+        # Use only Pillow + pytesseract (safe on Streamlit Cloud)
+        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"  # Add this if `which tesseract` works
         image = Image.open(uploaded_file).convert("RGB")
-        image_np = np.array(image)
-        gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
-        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
-        processed_image = Image.fromarray(thresh)
-
-        text = pytesseract.image_to_string(processed_image)
+        text = pytesseract.image_to_string(image)
         return text
     except Exception as e:
         return f"OCR failed: {e}"
