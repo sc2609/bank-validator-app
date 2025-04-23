@@ -174,7 +174,7 @@ if st.button('✅ Validate Banking Details'):
 
         # Run LLM validation
         validation_result = validate_user_input(vendor_input, extracted_data)
-        st.subheader("✅ AI- Powered Validation Result")
+        st.subheader("🔍 AI Validation Output")
         st.caption("Comparison result using LLM between vendor-submitted data and document-extracted data.")
         st.code(validation_result, language="json")
         st.caption("""
