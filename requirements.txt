@@ -1,0 +1,8 @@
+streamlit
+pytesseract
+pdf2image
+Pillow
+openai
+langchain
+scikit-learn
+pydantic
