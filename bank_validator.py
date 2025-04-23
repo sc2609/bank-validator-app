@@ -21,7 +21,7 @@ import streamlit as st
 
 # Setup Logging
 logging.basicConfig(filename='audit_trail.log', level=logging.INFO, format='%(asctime)s - %(message)s')
-os.environ["OPENAI_API_KEY"] = "dummy" #please add api key
+os.environ["OPENAI_API_KEY"] = "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" #please add api key
 # Initialize Langchain LLM
 llm = ChatOpenAI(model="gpt-4o")
 
