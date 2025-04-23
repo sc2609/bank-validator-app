@@ -146,6 +146,7 @@ vendor_input = {
 }
 
 if st.button('Validate'):
+    st.write("Uploaded file name:", uploaded_file.name)
     if uploaded_file and all(vendor_input.values()):
         st.info("Processing uploaded document...")
         extracted_text = extract_text_from_document(uploaded_file)
