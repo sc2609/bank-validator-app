@@ -34,23 +34,27 @@ class BankDetails(BaseModel):
 
 # ----------- Agent 1: Document Extractor (OCR + Layout) -----------
 def extract_text_from_document(uploaded_file):
-    print("\n[Agent 1] OCR extracting document...")
-
     try:
-        # Save uploaded_file temporarily
         with open("temp_image.png", "wb") as f:
             f.write(uploaded_file.read())
 
-        # Use LangChain loader
         loader = UnstructuredImageLoader("temp_image.png")
         data = loader.load()
         text = data[0].page_content
 
-        logging.info("Text extracted via UnstructuredImageLoader.")
+        if not text.strip():
+            raise ValueError("Empty output from Unstructured")
+
         return text
+
     except Exception as e:
-        logging.error(f"Unstructured loader failed: {e}")
-        return ""
+        logging.warning(f"UnstructuredImageLoader failed: {e} — Fallback to pytesseract.")
+        try:
+            image = Image.open("temp_image.png").convert("RGB")
+            return pytesseract.image_to_string(image)
+        except Exception as e2:
+            logging.error(f"Fallback OCR also failed: {e2}")
+            return ""
         
 def llm_extract_fields(text):
     print("\n[Agent 1] Extracting structured fields via LLM...")
