@@ -7,6 +7,7 @@ import json
 import random
 import re
 import numpy as np
+import cv2
 import logging
 from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
@@ -35,26 +36,18 @@ class BankDetails(BaseModel):
 # ----------- Agent 1: Document Extractor (OCR + Layout) -----------
 def extract_text_from_document(uploaded_file):
     try:
-        with open("temp_image.png", "wb") as f:
-            f.write(uploaded_file.read())
+        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"  # or your actual path
 
-        loader = UnstructuredImageLoader("temp_image.png")
-        data = loader.load()
-        text = data[0].page_content
+        image = Image.open(uploaded_file).convert("RGB")
+        image_np = np.array(image)
+        gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
+        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
+        processed_image = Image.fromarray(thresh)
 
-        if not text.strip():
-            raise ValueError("Empty output from Unstructured")
-
+        text = pytesseract.image_to_string(processed_image)
         return text
-
     except Exception as e:
-        logging.warning(f"UnstructuredImageLoader failed: {e} — Fallback to pytesseract.")
-        try:
-            image = Image.open("temp_image.png").convert("RGB")
-            return pytesseract.image_to_string(image)
-        except Exception as e2:
-            logging.error(f"Fallback OCR also failed: {e2}")
-            return ""
+        return f"OCR failed: {e}"
         
 def llm_extract_fields(text):
     print("\n[Agent 1] Extracting structured fields via LLM...")
