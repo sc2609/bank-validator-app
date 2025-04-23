@@ -6,3 +6,4 @@ openai
 langchain
 scikit-learn
 pydantic
+langchain-community
