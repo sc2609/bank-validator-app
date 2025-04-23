@@ -6,6 +6,7 @@ from pdf2image import convert_from_path
 import json
 import random
 import re
+import requests
 import numpy as np
 import subprocess
 import logging
@@ -34,15 +35,24 @@ class BankDetails(BaseModel):
 
 
 # ----------- Agent 1: Document Extractor (OCR + Layout) -----------
-def extract_text_from_document(uploaded_file):
+
+def extract_text_from_document(uploaded_file): 
     try:
-        # Use only Pillow + pytesseract (safe on Streamlit Cloud)
-        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"  # Add this if `which tesseract` works
-        image = Image.open(uploaded_file).convert("RGB")
-        text = pytesseract.image_to_string(image)
+        files = {'file': uploaded_file}
+        data = {
+            'apikey': st.secrets["OCR_SPACE_API_KEY"],
+            'language': 'eng',
+            'isOverlayRequired': False
+        }
+        response = requests.post('https://api.ocr.space/parse/image',
+                                 files=files,
+                                 data=data)
+
+        result = response.json()
+        text = result["ParsedResults"][0]["ParsedText"]
         return text
     except Exception as e:
-        return f"OCR failed: {e}"
+        return f"OCR failed via OCR.space: {e}"
         
 def llm_extract_fields(text):
     print("\n[Agent 1] Extracting structured fields via LLM...")
