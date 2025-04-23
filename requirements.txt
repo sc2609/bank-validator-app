@@ -8,3 +8,4 @@ scikit-learn
 pydantic
 langchain-community
 unstructured[all-docs]
+opencv-python
