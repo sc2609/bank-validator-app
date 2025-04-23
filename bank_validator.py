@@ -32,13 +32,21 @@ class BankDetails(BaseModel):
 
 
 # ----------- Agent 1: Document Extractor (OCR + Layout) -----------
-def extract_text_from_document(image_path):
+def extract_text_from_document(uploaded_file):
     print("\n[Agent 1] OCR extracting document...")
+
     try:
-        image = Image.open(image_path)
+        if uploaded_file.name.endswith(".pdf"):
+            # Convert first page of PDF to image
+            images = convert_from_path(uploaded_file.name)
+            image = images[0]
+        else:
+            image = Image.open(uploaded_file)
+
         text = pytesseract.image_to_string(image)
         logging.info("OCR extraction complete.")
         return text
+
     except Exception as e:
         logging.error(f"OCR failed: {e}")
         return ""
