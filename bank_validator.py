@@ -8,6 +8,7 @@ import random
 import re
 import numpy as np
 import logging
+import openai
 from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
@@ -21,9 +22,9 @@ import streamlit as st
 
 # Setup Logging
 logging.basicConfig(filename='audit_trail.log', level=logging.INFO, format='%(asctime)s - %(message)s')
-os.environ["OPENAI_API_KEY"] = "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" #please add api key
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 # Initialize Langchain LLM
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-4o", openai_api_key=st.secrets["OPENAI_API_KEY"])
 
 # ----------- Agent 1: Document Extractor (OCR + Layout) -----------
 def extract_text_from_document(image_path):
