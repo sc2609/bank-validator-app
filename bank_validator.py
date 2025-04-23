@@ -24,6 +24,13 @@ logging.basicConfig(filename='audit_trail.log', level=logging.INFO, format='%(as
 # Set API Key from Streamlit Secrets
 llm = ChatOpenAI(model="gpt-4o", openai_api_key=st.secrets["OPENAI_API_KEY"])
 
+#----------- Safe Json Output -------
+def safe_json(obj):
+    try:
+        return json.dumps(obj.dict())
+    except AttributeError:
+        return json.dumps(obj)
+
 # ----------- Global Pydantic Schema -----------
 class BankDetails(BaseModel):
     account_holder_name: str | None = Field(..., description="The full legal name of the individual or entity that owns the bank account, as mentioned in the document.")
@@ -124,8 +131,8 @@ def validate_user_input(user_input, extracted_data):
     ])
     chain = prompt | llm
     response = chain.invoke({
-        "user_input": json.dumps(user_input),
-        "extracted_data": json.dumps(extracted_data)
+        "user_input": safe_json(user_input),
+        "extracted_data": safe_json(extracted_data)
     })
     validation = response.content
     logging.info(f"Validation Results: {response.content}")
@@ -149,10 +156,6 @@ vendor_input = {
 }
 
 if st.button('Validate'):
-    tesseract_path = subprocess.getoutput("which tesseract")
-    st.write("🔍 Tesseract path:", tesseract_path)
-    st.write("Uploaded file name:", uploaded_file.name)
-    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
     if uploaded_file and all(vendor_input.values()):
         st.info("Processing uploaded document...")
         extracted_text = extract_text_from_document(uploaded_file)
