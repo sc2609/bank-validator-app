@@ -13,7 +13,7 @@ from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain.prompts import ChatPromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
@@ -66,7 +66,7 @@ def llm_extract_fields(text):
           description="The full address of the bank branch, including street, city, and state, as mentioned in the document."
       )
 
-    parser = JsonOutputParser(pydantic_object=BankDetails)
+    parser = PydanticOutputParser(pydantic_object=BankDetails)
 
     # 4. Create prompt template
     prompt = PromptTemplate(
