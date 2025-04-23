@@ -139,8 +139,8 @@ def validate_user_input(user_input, extracted_data):
     return validation
 
 # ----------- Streamlit UI -----------
-st.title("📄 Banking Document Validator")
-st.caption("AI-powered tool to extract and validate banking details using OCR, LLM, and LangChain.")
+st.title("🧠 LLM-Powered Banking Detail Validator")
+st.caption("LangChain + OpenAI + OCR | Automated extraction and validation of bank document fields | Designed by Sushant Charaya")
 
 with st.sidebar:
     st.header("📤 Upload Bank Document")
