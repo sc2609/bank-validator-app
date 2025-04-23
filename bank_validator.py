@@ -159,8 +159,8 @@ if st.button('Validate'):
     if uploaded_file and all(vendor_input.values()):
         st.info("Processing uploaded document...")
         extracted_text = extract_text_from_document(uploaded_file)
-        st.subheader("🧾 Image Output")
-        st.code(extracted_text, language="text")
+        # st.subheader("🧾 Image Output")
+        # st.code(extracted_text, language="text")
 
         # Run LLM extraction
         extracted_data = llm_extract_fields(extracted_text)
@@ -173,7 +173,7 @@ if st.button('Validate'):
         # Run LLM validation
         validation_result = validate_user_input(vendor_input, extracted_data)
         st.subheader("✅ Validation Result")
-        st.code(validation_result, language="json")
+        st.json(validation_result)
 
         logging.info("Validation complete")
     else:
