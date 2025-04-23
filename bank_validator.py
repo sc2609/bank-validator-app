@@ -8,23 +8,28 @@ import random
 import re
 import numpy as np
 import logging
-import openai
 from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
-from langchain.prompts import ChatPromptTemplate
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage
-from langchain_core.prompts import PromptTemplate
 import streamlit as st
 
 # Setup Logging
 logging.basicConfig(filename='audit_trail.log', level=logging.INFO, format='%(asctime)s - %(message)s')
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-# Initialize Langchain LLM
+
+# Set API Key from Streamlit Secrets
 llm = ChatOpenAI(model="gpt-4o", openai_api_key=st.secrets["OPENAI_API_KEY"])
+
+# ----------- Global Pydantic Schema -----------
+class BankDetails(BaseModel):
+    account_holder_name: str | None = Field(..., description="The full legal name of the individual or entity that owns the bank account, as mentioned in the document.")
+    account_holder_account_number: str | None = Field(..., description="The unique number assigned by the bank to identify the account holder’s bank account.")
+    account_holder_address: str | None = Field(..., description="The complete residential or business address of the account holder, including street, unit, city, state, and postal code as available.")
+    routing_number: str | None = Field(..., description="The bank’s routing number used to identify the financial institution in a transaction. This may also be referred to as a bank code or ABA number.")
+    bank_name: str | None = Field(..., description="The official name of the bank or financial institution as stated in the document. This could appear near the address or as a logo/header.")
+    bank_address: str | None = Field(..., description="The full address of the bank branch, including street, city, and state, as mentioned in the document.")
+
 
 # ----------- Agent 1: Document Extractor (OCR + Layout) -----------
 def extract_text_from_document(image_path):
@@ -40,32 +45,7 @@ def extract_text_from_document(image_path):
 
 def llm_extract_fields(text):
     print("\n[Agent 1] Extracting structured fields via LLM...")
-    class BankDetails(BaseModel):
-      account_holder_name: str | None = Field(
-          ...,
-          description="The full legal name of the individual or entity that owns the bank account, as mentioned in the document."
-      )
-      account_holder_account_number: str | None = Field(
-          ...,
-          description="The unique number assigned by the bank to identify the account holder’s bank account."
-      )
-      account_holder_address: str | None = Field(
-          ...,
-          description="The complete residential or business address of the account holder, including street, unit, city, state, and postal code as available."
-      )
-      routing_number: str | None = Field(
-          ...,
-          description="The bank’s routing number used to identify the financial institution in a transaction. This may also be referred to as a bank code or ABA number."
-      )
-      bank_name: str | None = Field(
-          ...,
-          description="The official name of the bank or financial institution as stated in the document. This could appear near the address or as a logo/header."
-      )
-      bank_address: str | None = Field(
-          ...,
-          description="The full address of the bank branch, including street, city, and state, as mentioned in the document."
-      )
-
+    
     parser = PydanticOutputParser(pydantic_object=BankDetails)
 
     # 4. Create prompt template
@@ -82,9 +62,21 @@ def llm_extract_fields(text):
     )
 
     chain = prompt | llm | parser
-    result = chain.invoke({"text":text})
-    logging.info(f"Extracted Data: {result}")
-    return result
+    try:
+        result = chain.invoke({"text": text})
+        logging.info(f"Extracted Data: {result}")
+        return result
+    except Exception as e:
+        logging.error(f"LLM parsing failed: {e}")
+        return {
+            "account_holder_name": None,
+            "account_holder_account_number": None,
+            "account_holder_address": None,
+            "routing_number": None,
+            "bank_name": None,
+            "bank_address": None,
+            "error": "Could not parse extracted data. Please check document clarity or retry."
+        }
 
 # ----------- Agent 2: Validator (LLM-powered with enrichment trigger) -----------
 def validate_user_input(user_input, extracted_data):
@@ -116,19 +108,6 @@ def validate_user_input(user_input, extracted_data):
             "bank_name": "Match" | "Mismatch" | null,
             "bank_address": "Match" | "Mismatch" | null
           }}
-          Example:
-            Vendor Data:
-            {{
-              "account_holder_address": "231 Valley Farms Street, CA"
-            }}
-            Extracted Data:
-            {{
-              "account_holder_address": "231 Valley Farms Street, Santa Monica, CA"
-            }}
-            Output:
-            {{
-              "account_holder_address": "Match"
-            }}
           """),
         ("human", "Here is the vendor data:\n{user_input}\nHere is the extracted document data:\n{extracted_data}")
     ])
