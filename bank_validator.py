@@ -120,6 +120,7 @@ def validate_user_input(user_input, extracted_data):
     logging.info(f"Validation Results: {response.content}")
     return validation
 
+# ----------- Streamlit UI -----------
 st.title("📄 Banking Document Validator with AI")
 
 with st.sidebar:
@@ -135,24 +136,27 @@ vendor_input = {
     "bank_name": st.text_input("Bank Name"),
     "bank_address": st.text_input("Bank Address")
 }
+
 if st.button('Validate'):
     if uploaded_file and all(vendor_input.values()):
         st.info("Processing uploaded document...")
         extracted_text = extract_text_from_document(uploaded_file)
         st.subheader("🧾 OCR Output")
         st.code(extracted_text, language="text")
-    
+
         # Run LLM extraction
         extracted_data = llm_extract_fields(extracted_text)
         st.subheader("📑 Extracted Fields")
-        st.json(extracted_data)
-    
+        if "error" in extracted_data:
+            st.error(extracted_data["error"])
+        else:
+            st.json(extracted_data)
+
         # Run LLM validation
         validation_result = validate_user_input(vendor_input, extracted_data)
-    
         st.subheader("✅ Validation Result")
-        st.code(validation_result.content, language="json")
-        
+        st.code(validation_result, language="json")
+
         logging.info("Validation complete")
     else:
         st.warning("Please upload a document and enter all vendor data to start.")
