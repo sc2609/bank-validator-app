@@ -174,12 +174,18 @@ if st.button('✅ Validate Banking Details'):
 
         # Run LLM validation
         validation_result = validate_user_input(vendor_input, extracted_data)
-        st.subheader("✅ Step 5: Validation Result")
-        st.caption("Comparison result between vendor-submitted data and document-extracted data.")
+        st.subheader("✅ AI- Powered Validation Result")
+        st.caption("Comparison result using LLM between vendor-submitted data and document-extracted data.")
         st.code(validation_result, language="json")
-
+        st.caption("""
+        **🟢 Match** — The AI determined the vendor-submitted value and document-extracted value are the same or semantically similar (e.g., formatting or minor spelling differences).
+        
+        **🔴 Mismatch** — The values are clearly different or refer to unrelated entities.
+        
+        **⚠️ Null** — The field was missing, unreadable, or not found in either the vendor input or the extracted document.
+        """)
         st.markdown("---")
-        st.info("This tool uses OCR + LLM + Langchain Framework to automate banking detail validation. Built for speed and accuracy. Fraud Validation is coming soon...")
+        st.info("This tool uses OCR + LLM + Langchain Framework to automate banking detail validation. Built for speed and accuracy. Fraud Validation of document is coming soon...")
 
         logging.info("Validation complete")
     else:
