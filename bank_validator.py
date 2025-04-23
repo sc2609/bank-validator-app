@@ -155,16 +155,18 @@ vendor_input = {
     "bank_address": st.text_input("Bank Address")
 }
 
-if st.button('Validate'):
+if st.button('✅ Validate Banking Details'):
     if uploaded_file and all(vendor_input.values()):
         st.info("Processing uploaded document...")
         extracted_text = extract_text_from_document(uploaded_file)
+        st.info("Processing done ✅")
         # st.subheader("🧾 Image Output")
         # st.code(extracted_text, language="text")
 
         # Run LLM extraction
         extracted_data = llm_extract_fields(extracted_text)
-        st.subheader("📑 Extracted Fields")
+        st.subheader("📑 AI-Powered Extracted Fields")
+        st.caption("Structured banking fields extracted by the LLM from the uploaded document.")
         if "error" in extracted_data:
             st.error(extracted_data["error"])
         else:
@@ -172,8 +174,12 @@ if st.button('Validate'):
 
         # Run LLM validation
         validation_result = validate_user_input(vendor_input, extracted_data)
-        st.subheader("✅ Validation Result")
-        st.json(validation_result)
+        st.subheader("✅ Step 5: Validation Result")
+        st.caption("Comparison result between vendor-submitted data and document-extracted data.")
+        st.code(validation_result, language="json")
+
+        st.markdown("---")
+        st.info("This tool uses OCR + LLM + Langchain Framework to automate banking detail validation. Built for speed and accuracy. Fraud Validation is coming soon...")
 
         logging.info("Validation complete")
     else:
