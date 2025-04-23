@@ -182,7 +182,7 @@ if st.button('✅ Validate Banking Details'):
         
         **🔴 Mismatch** — The values are clearly different or refer to unrelated entities.
         
-        **⚠️ Null** — The field was missing, unreadable, or not found in either the vendor input or the extracted document.
+        **⚠️ Null** — The field was missing, unreadable, or not found in the extracted document.
         """)
         st.markdown("---")
         st.info("This tool uses OCR + LLM + Langchain Framework to automate banking detail validation. Built for speed and accuracy. Fraud Validation of document is coming soon...")
