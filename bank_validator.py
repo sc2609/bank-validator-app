@@ -185,7 +185,14 @@ if st.button('✅ Validate Banking Details'):
         **⚠️ Null** — The field was missing, unreadable, or not found in the extracted document.
         """)
         st.markdown("---")
-        st.info("This tool uses OCR + LLM + Langchain Framework to automate banking detail validation. Built for speed and accuracy. Fraud Validation of document is coming soon...")
+        st.success("""
+        🚀 **Built with purpose by Sushant Charaya**
+        
+        This AI-powered tool leverages OCR, LLMs, and the LangChain framework to automate the validation of banking details — delivering unmatched speed, accuracy, and scalability.
+        
+        🧠 Designed for operational teams.  
+        🔒 Future-ready: Fraud detection module launching soon...
+        """)
 
         logging.info("Validation complete")
     else:
