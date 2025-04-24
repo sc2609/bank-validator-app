@@ -1,6 +1,6 @@
 # 🧾 Banking Document Validator
 
-This Streamlit app uses OCR + LLM to validate bank documents against user-submitted vendor data using LangChain + GPT-4o.
+This Streamlit app uses OCR + LLM to validate bank documents against user-submitted vendor data using LangChain + openAI
 
 ## 🔍 Features
 - Upload scanned banking documents
