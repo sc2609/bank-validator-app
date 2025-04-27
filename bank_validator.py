@@ -210,7 +210,7 @@ def fraud_detection_pipeline(extracted_data):
     return {
         "account_number_valid": account_valid,
         "bank_verified": bank_verified,
-        "forgery_detected": forgery_detected,
+        # "forgery_detected": forgery_detected,
         "fraud_score": fraud_score
     }
 
