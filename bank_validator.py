@@ -227,11 +227,12 @@ def fraud_detection_pipeline(extracted_data):
     account_number = extracted_data.get("account_holder_account_number", "")
     bank_name = extracted_data.get("bank_name", "")
     bank_address = extracted_data.get("bank_address", "")
+    routing_number = extracted_data.get("routing_number", "")
 
     print("\n🚀 Running Global Fraud Detection...")
 
     account_valid = is_valid_account_number(account_number)
-    bank_verified = verify_bank_details_with_serper(bank_name, bank_address)
+    bank_verified = verify_bank_details_with_serper(bank_name, bank_address, routing_number)
     # forgery_detected = detect_image_forgery(uploaded_file_path)
 
     fraud_score = 0
