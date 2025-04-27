@@ -180,9 +180,9 @@ def detect_image_forgery(uploaded_file_path):
 
 # --------------- Fraud Detection Pipeline ---------------
 def fraud_detection_pipeline(extracted_data):
-    account_number = extracted_data.get("account_holder_account_number", "")
-    bank_name = extracted_data.get("bank_name", "")
-    bank_address = extracted_data.get("bank_address", "")
+    account_number = extracted_data.account_holder_account_number or ""
+    bank_name = extracted_data.bank_name or ""
+    bank_address = extracted_data.bank_address or ""
 
     print("\n🚀 Running Global Fraud Detection...")
 
