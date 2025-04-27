@@ -8,7 +8,7 @@ import re
 import requests
 import numpy as np
 import logging
-import cv2
+# import cv2
 from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
@@ -189,15 +189,15 @@ def fraud_detection_pipeline(extracted_data, uploaded_file_path):
 
     account_valid = is_valid_account_number(account_number)
     bank_verified = verify_bank_details_with_serper(bank_name, bank_address)
-    forgery_detected = detect_image_forgery(uploaded_file_path)
+    # forgery_detected = detect_image_forgery(uploaded_file_path)
 
     fraud_score = 0
     if not account_valid:
         fraud_score += 30
     if not bank_verified:
         fraud_score += 40
-    if forgery_detected:
-        fraud_score += 30
+    # if forgery_detected:
+    #     fraud_score += 30
 
     fraud_score = min(fraud_score, 100)
 
