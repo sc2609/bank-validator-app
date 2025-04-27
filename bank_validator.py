@@ -146,24 +146,60 @@ def is_valid_account_number(account_number: str):
     return False
 
 # --------------- Bank Verification (Serper API) ---------------
-def verify_bank_details_with_serper(bank_name, bank_address):
+def verify_bank_details_with_serper_llm(bank_name, bank_address, routing_number):
     try:
         headers = {
             'X-API-KEY': st.secrets["SERPER_API_KEY"],
             'Content-Type': 'application/json'
         }
-        payload = {"q": f"{bank_name} {bank_address}", "gl": "us", "hl": "en"}
+        payload = {"q": f"{bank_name} {bank_address} - {routing_number}", "gl": "us", "hl": "en"}
         response = requests.post('https://google.serper.dev/search', headers=headers, json=payload)
         results = response.json()
-        for result in results.get('organic', []):
-            title = result.get('title', '').lower()
-            snippet = result.get('snippet', '').lower()
-            if bank_name.lower() in title or bank_name.lower() in snippet:
-                return True
-        return False
+
+        organic_results = results.get('organic', [])
+        if not organic_results:
+            return "Uncertain"  # No results found
+
+        # Collect title + snippets
+        combined_results = ""
+        for result in organic_results[:5]:  # Only first 5 results
+            title = result.get('title', '')
+            snippet = result.get('snippet', '')
+            combined_results += f"Title: {title}\nSnippet: {snippet}\n\n"
+
+        # Now use LLM to check if bank details match
+        prompt = f"""
+            You are an intelligent fraud detection AI.
+            
+            A user submitted the following bank details:
+            - Bank Name: {bank_name}
+            - Bank Address: {bank_address}
+            - Routing Number: {routing_number}
+            
+            Here are the top Google search results:
+            {combined_results}
+            
+            Task:
+            - Analyze if the search results seem to confirm the submitted bank details.
+            - If most results are relevant and confirm the bank, reply: "Authentic".
+            - If results do not match or seem suspicious, reply: "Suspicious".
+            - If unclear, reply: "Uncertain".
+            
+            Answer strictly with one word: Authentic, Suspicious, or Uncertain.
+            """
+
+        # LLM invocation
+        response = llm.invoke(prompt)
+        answer = response.content.strip()
+        
+        if answer not in ["Authentic", "Suspicious", "Uncertain"]:
+            return "Uncertain"
+        return answer
+
     except Exception as e:
-        print(f"SerperAPI Error: {e}")
-        return False
+        print(f"SerperAPI/LLM Error: {e}")
+        return "Uncertain"
+
 
 # --------------- Forgery Detection (Image) ---------------
 def detect_image_forgery(uploaded_file_path):
@@ -185,7 +221,8 @@ def fraud_detection_pipeline(extracted_data):
     elif isinstance(extracted_data, dict):
         extracted_data = extracted_data
     else:
-        raise ValueError("Extracted data is not valid. Cannot proceed with fraud detection.")
+        st.error("❗ Document extraction failed. Please upload a clearer document.")
+        st.stop()
 
     account_number = extracted_data.get("account_holder_account_number", "")
     bank_name = extracted_data.get("bank_name", "")
@@ -260,9 +297,16 @@ if st.button('✅ Validate Banking Details'):
         **⚠️ Null** — The field was missing, unreadable, or not found in the extracted document.
         """)
         
-        fraud_report = fraud_detection_pipeline(safe_json(extracted_data))
+        # Run Fraud Detection
+        fraud_report = fraud_detection_pipeline(extracted_data)
         st.subheader("🚨 Fraud Detection Report")
         st.json(fraud_report)
+
+        fraud_score = fraud_report["fraud_score"]
+
+        # Fraud Risk Bar
+        st.subheader("📊 Fraud Risk Meter")
+        st.progress(fraud_score)
 
         # if fraud_report["fraud_score"] >= 60:
         #     st.error("❗ High Fraud Risk Detected!")
