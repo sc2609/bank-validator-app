@@ -167,30 +167,37 @@ def verify_bank_details_with_serper_llm(bank_name, bank_address, routing_number)
             snippet = result.get('snippet', '')
             combined_results += f"Title: {title}\nSnippet: {snippet}\n\n"
 
-        # Now use LLM to check if bank details match
-        prompt = f"""
-            You are an intelligent fraud detection AI.
-            
-            A user submitted the following bank details:
-            - Bank Name: {bank_name}
-            - Bank Address: {bank_address}
-            - Routing Number: {routing_number}
-            
-            Here are the top Google search results:
-            {combined_results}
-            
-            Task:
-            - Analyze if the search results seem to confirm the submitted bank details.
-            - If most results are relevant and confirm the bank, reply: "Authentic".
-            - If results do not match or seem suspicious, reply: "Suspicious".
-            - If unclear, reply: "Uncertain".
-            
-            Answer strictly with one word: Authentic, Suspicious, or Uncertain.
-            """
+        # Prepare LLM ChatPromptTemplate
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("system", """You are an intelligent fraud detection AI. 
+                Your task is to verify if the submitted bank details match real bank information based on Google search results. 
+                Answer strictly with one word: Authentic, Suspicious, or Uncertain."""),
+                
+            ("human", """
+                Here are the user-submitted bank details:
+                - Bank Name: {bank_name}
+                - Bank Address: {bank_address}
+                - Routing Number: {routing_number}
+                
+                Here are the top Google Search Results:
+                {combined_results}
+                
+                Does the search result confirm that the bank details are authentic?
+                
+                Answer strictly with one word: Authentic, Suspicious, or Uncertain.
+                """)
+        ])
 
-        # LLM invocation
-        response = llm.invoke(prompt)
-        answer = response.content.strip()
+        chain = prompt_template | llm
+
+        response = chain.invoke({
+            "bank_name": bank_name,
+            "bank_address": bank_address,
+            "routing_number": routing_number,
+            "combined_results": combined_results
+        })
+
+        answer = response.content
         
         if answer not in ["Authentic", "Suspicious", "Uncertain"]:
             return "Uncertain"
