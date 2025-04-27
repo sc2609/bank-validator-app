@@ -179,7 +179,7 @@ def detect_image_forgery(uploaded_file_path):
         return False
 
 # --------------- Fraud Detection Pipeline ---------------
-def fraud_detection_pipeline(extracted_data, uploaded_file_path):
+def fraud_detection_pipeline(extracted_data):
     account_number = extracted_data.get("account_holder_account_number", "")
     bank_name = extracted_data.get("bank_name", "")
     bank_address = extracted_data.get("bank_address", "")
@@ -253,17 +253,8 @@ if st.button('✅ Validate Banking Details'):
         
         **⚠️ Null** — The field was missing, unreadable, or not found in the extracted document.
         """)
-        st.markdown("---")
-        st.success("""
-        🚀 **Built with purpose by Sushant Charaya**
         
-        This AI-powered tool leverages OCR, LLMs, and the LangChain framework to automate the validation of banking details — delivering unmatched speed, accuracy, and scalability.
-        
-        🧠 Designed for operational teams.  
-        🔒 Future-ready: Fraud detection powered by AI module launching soon...
-        """)
-        
-        fraud_report = fraud_detection_pipeline(extracted_data, temp_path)
+        fraud_report = fraud_detection_pipeline(extracted_data)
         st.subheader("🚨 Fraud Detection Report")
         st.json(fraud_report)
 
@@ -273,6 +264,16 @@ if st.button('✅ Validate Banking Details'):
             st.warning("⚠️ Medium Risk - Manual Review Recommended.")
         else:
             st.success("✅ Document Seems Safe.")
+        
+        st.markdown("---")
+        st.success("""
+        🚀 **Built with purpose by Sushant Charaya**
+        
+        This AI-powered tool leverages OCR, LLMs, and the LangChain framework to automate the validation of banking details — delivering unmatched speed, accuracy, and scalability.
+        
+        🧠 Designed for operational teams.  
+        🔒 Future-ready: Fraud detection powered by AI module launching soon...
+        """)
         
         logging.info("Fraud Detection complete")
     else:
