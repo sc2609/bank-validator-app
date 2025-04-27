@@ -258,12 +258,12 @@ if st.button('✅ Validate Banking Details'):
         st.subheader("🚨 Fraud Detection Report")
         st.json(fraud_report)
 
-        if fraud_report["fraud_score"] >= 60:
-            st.error("❗ High Fraud Risk Detected!")
-        elif fraud_report["fraud_score"] >= 30:
-            st.warning("⚠️ Medium Risk - Manual Review Recommended.")
-        else:
-            st.success("✅ Document Seems Safe.")
+        # if fraud_report["fraud_score"] >= 60:
+        #     st.error("❗ High Fraud Risk Detected!")
+        # elif fraud_report["fraud_score"] >= 30:
+        #     st.warning("⚠️ Medium Risk - Manual Review Recommended.")
+        # else:
+        #     st.success("✅ Document Seems Safe.")
         
         st.markdown("---")
         st.success("""
