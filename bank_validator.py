@@ -306,15 +306,15 @@ if st.button('✅ Validate Banking Details'):
         """)
         
         # Run Fraud Detection
-        fraud_report = fraud_detection_pipeline(extracted_data)
-        st.subheader("🚨 Fraud Detection Report")
-        st.json(fraud_report)
+        # fraud_report = fraud_detection_pipeline(extracted_data)
+        # st.subheader("🚨 Fraud Detection Report")
+        # st.json(fraud_report)
 
-        fraud_score = fraud_report["fraud_score"]
+        # fraud_score = fraud_report["fraud_score"]
 
-        # Fraud Risk Bar
-        st.subheader("📊 Fraud Risk Meter")
-        st.progress(fraud_score)
+        # # Fraud Risk Bar
+        # st.subheader("📊 Fraud Risk Meter")
+        # st.progress(fraud_score)
 
         # if fraud_report["fraud_score"] >= 60:
         #     st.error("❗ High Fraud Risk Detected!")
