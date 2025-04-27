@@ -8,7 +8,6 @@ import re
 import requests
 import numpy as np
 import logging
-# import cv2
 from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
