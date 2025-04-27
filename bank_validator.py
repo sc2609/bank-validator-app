@@ -261,7 +261,7 @@ if st.button('✅ Validate Banking Details'):
         **⚠️ Null** — The field was missing, unreadable, or not found in the extracted document.
         """)
         
-        fraud_report = fraud_detection_pipeline(extracted_data)
+        fraud_report = fraud_detection_pipeline(safe_json(extracted_data))
         st.subheader("🚨 Fraud Detection Report")
         st.json(fraud_report)
 
