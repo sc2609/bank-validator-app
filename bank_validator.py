@@ -4,12 +4,11 @@ import os
 from PIL import Image
 from pdf2image import convert_from_path
 import json
-import random
 import re
 import requests
 import numpy as np
-import subprocess
 import logging
+import cv2
 from sklearn.ensemble import IsolationForest
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
