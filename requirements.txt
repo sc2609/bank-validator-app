@@ -9,3 +9,4 @@ pydantic
 langchain-community
 unstructured[all-docs]
 requests
+opencv-python
