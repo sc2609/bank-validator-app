@@ -138,6 +138,78 @@ def validate_user_input(user_input, extracted_data):
     logging.info(f"Validation Results: {response.content}")
     return validation
 
+# --------------- Global Account Number Validation ---------------
+def is_valid_account_number(account_number: str):
+    account_number_clean = account_number.replace(" ", "").replace("-", "")
+    if re.match(r'^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$', account_number_clean):
+        return True  # IBAN-like
+    if account_number_clean.isdigit() and 8 <= len(account_number_clean) <= 18:
+        return True
+    return False
+
+# --------------- Bank Verification (Serper API) ---------------
+def verify_bank_details_with_serper(bank_name, bank_address):
+    try:
+        headers = {
+            'X-API-KEY': st.secrets["SERPER_API_KEY"],
+            'Content-Type': 'application/json'
+        }
+        payload = {"q": f"{bank_name} {bank_address}", "gl": "us", "hl": "en"}
+        response = requests.post('https://google.serper.dev/search', headers=headers, json=payload)
+        results = response.json()
+        for result in results.get('organic', []):
+            title = result.get('title', '').lower()
+            snippet = result.get('snippet', '').lower()
+            if bank_name.lower() in title or bank_name.lower() in snippet:
+                return True
+        return False
+    except Exception as e:
+        print(f"SerperAPI Error: {e}")
+        return False
+
+# --------------- Forgery Detection (Image) ---------------
+def detect_image_forgery(uploaded_file_path):
+    try:
+        img = cv2.imread(uploaded_file_path)
+        if img is None:
+            return False
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        return laplacian_var < 100  # threshold
+    except Exception as e:
+        print(f"Forgery detection error: {e}")
+        return False
+
+# --------------- Fraud Detection Pipeline ---------------
+def fraud_detection_pipeline(extracted_data, uploaded_file_path):
+    account_number = extracted_data.get("account_holder_account_number", "")
+    bank_name = extracted_data.get("bank_name", "")
+    bank_address = extracted_data.get("bank_address", "")
+
+    print("\n🚀 Running Global Fraud Detection...")
+
+    account_valid = is_valid_account_number(account_number)
+    bank_verified = verify_bank_details_with_serper(bank_name, bank_address)
+    forgery_detected = detect_image_forgery(uploaded_file_path)
+
+    fraud_score = 0
+    if not account_valid:
+        fraud_score += 30
+    if not bank_verified:
+        fraud_score += 40
+    if forgery_detected:
+        fraud_score += 30
+
+    fraud_score = min(fraud_score, 100)
+
+    return {
+        "account_number_valid": account_valid,
+        "bank_verified": bank_verified,
+        "forgery_detected": forgery_detected,
+        "fraud_score": fraud_score
+    }
+
+
 # ----------- Streamlit UI -----------
 st.title("🧠 LLM-Powered Banking Detail Validator")
 st.caption("LangChain + OpenAI + OCR | Automated extraction and validation of bank document fields | Designed by Sushant Charaya")
@@ -161,8 +233,6 @@ if st.button('✅ Validate Banking Details'):
         st.info("Processing uploaded document...")
         extracted_text = extract_text_from_document(uploaded_file)
         st.info("Processing done ✅")
-        # st.subheader("🧾 Image Output")
-        # st.code(extracted_text, language="text")
 
         # Run LLM extraction
         extracted_data = llm_extract_fields(extracted_text)
@@ -194,7 +264,18 @@ if st.button('✅ Validate Banking Details'):
         🧠 Designed for operational teams.  
         🔒 Future-ready: Fraud detection powered by AI module launching soon...
         """)
+        
+        fraud_report = fraud_detection_pipeline(extracted_data, temp_path)
+        st.subheader("🚨 Fraud Detection Report")
+        st.json(fraud_report)
 
-        logging.info("Validation complete")
+        if fraud_report["fraud_score"] >= 60:
+            st.error("❗ High Fraud Risk Detected!")
+        elif fraud_report["fraud_score"] >= 30:
+            st.warning("⚠️ Medium Risk - Manual Review Recommended.")
+        else:
+            st.success("✅ Document Seems Safe.")
+        
+        logging.info("Fraud Detection complete")
     else:
         st.warning("Please upload a document and enter all vendor data to start.")
