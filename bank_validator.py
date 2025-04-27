@@ -180,9 +180,12 @@ def detect_image_forgery(uploaded_file_path):
 
 # --------------- Fraud Detection Pipeline ---------------
 def fraud_detection_pipeline(extracted_data):
-    # Normalize extracted_data
-    if hasattr(extracted_data, 'dict'):
+    if isinstance(extracted_data, BaseModel):
         extracted_data = extracted_data.dict()
+    elif isinstance(extracted_data, dict):
+        extracted_data = extracted_data
+    else:
+        raise ValueError("Extracted data is not valid. Cannot proceed with fraud detection.")
 
     account_number = extracted_data.get("account_holder_account_number", "")
     bank_name = extracted_data.get("bank_name", "")
